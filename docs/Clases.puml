@@ -19,7 +19,7 @@ enum EstadoCita {
 }
 
 enum Turno {
-  MANANA
+  MAÑANA
   TARDE
   NOCHE
 }
@@ -49,10 +49,13 @@ class Paciente {
   -historiaClinicaId: String
   -grupoSanguineo: GrupoSanguineo
   -alergias: List<String>
+  -contraindicaciones: List<String>
   -citas: List<CitaMedica>
 
   +agregarAlergia(): void
-  +obtenerHistorial(): void
+  +agregarCita(CitaMedica cita): void
+  +obtenerHistorial(): List<CitaMedica>
+  +agregarContraindicacion(contraindicacion: String): void
 }
 
 class Medico {
@@ -63,6 +66,7 @@ class Medico {
 
   +atenderPaciente(): void
   +calcularSalario(): double
+  +registrarDiagnostico(Diagnostico diagnostico): void
 }
 
 class Cirujano {
@@ -71,6 +75,7 @@ class Cirujano {
 
   +realizarCirugia(): void
   +calcularBono(): double
+  +calcularSalario(): double
 }
 
 class Enfermero {
@@ -87,6 +92,7 @@ class Hospital {
   -direccion: String
   -empleados: List<Empleado>
   -pacientes: List<Paciente>
+  -citas: List<CitaMedica>
 
   +contratarEmpleado(): void
   +agendarCita(): void
@@ -104,6 +110,8 @@ class CitaMedica {
   -diagnostico: String
 
   +calcularCosto(): double
+  +confirmar(): void
+  +iniciarAtencion(): void
   +completar(): void
   +cancelar(): void
 }

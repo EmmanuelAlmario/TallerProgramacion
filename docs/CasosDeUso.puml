@@ -24,6 +24,7 @@ rectangle "Gestion Hospitalaria" {
   usecase "Agendar citas medicas" as AC
   usecase "Confirmar cita" as CEE
   usecase "Cancelar cita" as CC
+  usecase "Iniciar atencion" as IA
   usecase "Atender cita" as AAC
   usecase "Completar cita" as CCC
   usecase "Registrar diagnosticos" as RD
@@ -46,6 +47,7 @@ RE --> CEE
 PA --> CH
 PA --> CC
 
+ME --> IA
 ME --> AAC
 ME --> CCC
 ME --> RD
@@ -62,7 +64,8 @@ CH .> RP : <<include>>
 AC .> RP : <<include>>
 
 CEE .> AC : <<include>>
-AAC .> CEE : <<include>>
+IA .> CEE : <<include>>
+AAC .> IA : <<include>>
 CCC .> AAC : <<include>>
 
 RD .> CCC : <<include>>
