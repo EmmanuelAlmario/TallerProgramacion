@@ -1,78 +1,151 @@
 @startuml
 enum GrupoSanguineo {
-A_POSITIVO
-A_NEGATIVO
-B_POSITIVO
-B_NEGATIVO
-AB_POSITIVO
-AB_NEGATIVO
-O_POSITIVO
-O_NEGATIVO
+  A_POSITIVO
+  A_NEGATIVO
+  B_POSITIVO
+  B_NEGATIVO
+  AB_POSITIVO
+  AB_NEGATIVO
+  O_POSITIVO
+  O_NEGATIVO
 }
 
-enum Especialidad {
-ENFERMERO
-CIRUJANO
+enum EstadoCita {
+  EN_ESPERA
+  CONFIRMADA
+  EN_ATENCION
+  COMPLETADA
+  CANCELADA
 }
 
-enum estadoCita {
-EN_ESPERA
-CONFIRMADA
-EN_ATENCION
-COMPLETADA
-CANCELADA
+enum Turno {
+  MANANA
+  TARDE
+  NOCHE
 }
 
-abstract class  Persona {
--id: String
--nombre: String
--apellido: String
--fechaNacimiento: LocalDate
--email: String
+abstract class Persona {
+  -id: String
+  -nombre: String
+  -apellido: String
+  -fechaNacimiento: LocalDate
+  -email: String
 
-+{abstract} calcularEdad(): int
-+{abstract} obtenerTipo(): String
+  +{abstract} calcularEdad(): int
+  +{abstract} obtenerTipo(): String
 }
 
 abstract class Empleado {
--legajo: String
--fechaContratacion: LocalDate
--salarioBase: int
--activo: boolean
+  -legajo: String
+  -fechaContratacion: LocalDate
+  -salarioBase: double
+  -activo: boolean
 
-+{abstract} calcularSalario(): double
-+antiguedad(): int
+  +{abstract} calcularSalario(): double
+  +antiguedad(): int
 }
 
 class Paciente {
--historiaClinicaId: String
--grupoSanguineo: GrupoSanguineo
--alergias: List<String>
--citas: List<CitaMedica>
+  -historiaClinicaId: String
+  -grupoSanguineo: GrupoSanguineo
+  -alergias: List<String>
+  -citas: List<CitaMedica>
 
-+agregarAlergia(): void
-+obtenerHistorial(): void
+  +agregarAlergia(): void
+  +obtenerHistorial(): void
 }
 
 class Medico {
--numeroLicencia: int
--especialidad: Especialidad
--pacientesAsignados: List<Paciente>
--citasAtendidas: int
+  -numeroLicencia: int
+  -especialidad: Especialidad
+  -pacientesAsignados: List<Paciente>
+  -citasAtendidas: int
 
-+atenderPaciente(): void
-+calcularSalario(): double
+  +atenderPaciente(): void
+  +calcularSalario(): double
 }
 
 class Cirujano {
--cirugiasRealizadas: int
--disponibleEmergencias: boolean
+  -cirugiasRealizadas: int
+  -disponibleEmergencias: boolean
 
-+realizarCirugia: void
-+calcularBono: void
+  +realizarCirugia(): void
+  +calcularBono(): double
 }
 
 class Enfermero {
--turno
+  -turno: Turno
+  -areaAsignada: String
+  -pacientesACargo: List<Paciente>
+
+  +asistirCirugia(): void
+  +calcularSalario(): double
 }
+
+class Hospital {
+  -nombre: String
+  -direccion: String
+  -empleados: List<Empleado>
+  -pacientes: List<Paciente>
+
+  +contratarEmpleado(): void
+  +agendarCita(): void
+  +calcularNominaTotal(): double
+}
+
+class CitaMedica {
+  -id: String
+  -paciente: Paciente
+  -medico: Medico
+  -fechaHora: LocalDateTime
+  -motivo: String
+  -estado: EstadoCita
+  -costo: double
+  -diagnostico: String
+
+  +calcularCosto(): double
+  +completar(): void
+  +cancelar(): void
+}
+
+class Especialidad {
+  -codigo: String
+  -nombre: String
+  -descripcion: String
+  -costoConsulta: double
+}
+
+class Diagnostico {
+  -id: String
+  -descripcion: String
+  -receta: String
+  -fecha: LocalDate
+  -medico: Medico
+}
+
+' Herencia
+Empleado --|> Persona
+Paciente --|> Persona
+Medico --|> Empleado
+Cirujano --|> Medico
+Enfermero --|> Empleado
+
+' Asociaciones
+Medico --> Especialidad
+CitaMedica --> Paciente
+CitaMedica --> Medico
+CitaMedica --> EstadoCita
+Diagnostico --> Medico
+Enfermero --> Turno
+Paciente --> GrupoSanguineo
+
+' Composición
+Hospital *-- Empleado
+Hospital *-- Paciente
+Hospital *-- CitaMedica
+
+' Agregación
+Paciente o-- CitaMedica
+Medico o-- Paciente
+
 @enduml
