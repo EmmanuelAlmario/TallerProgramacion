@@ -1,0 +1,98 @@
+@startuml
+
+skinparam classAttributeIconSize 0
+
+' =========================
+' ENUMS
+' =========================
+
+enum EstadoTransaccion {
+    PENDIENTE
+    PROCESANDO
+    COMPLETADA
+    RECHAZADA
+    REVERTIDA
+}
+
+enum TipoCuenta {
+    AHORROS
+    CORRIENTE
+    CREDITO
+}
+
+enum Turno {
+    MAÑANA
+    TARDE
+    NOCHE
+}
+
+enum TipoDocumento {
+    CELUDA
+    PASAPORTE
+    NIT
+    CELUDA_EXTRANJERIA
+}
+
+' =========================
+' INTERFACES
+' =========================
+
+interface Consultable {
+    + obtenerResumen(): String
+    + estadoActivo(): Boolean
+    + obtenerTipo(): String
+}
+
+interface Transaccionable {
+    + depositar(monto: double)
+    + retirar(monto: double)
+    + calcularComision(monto: double) : double
+    + consultarSaldo() : double
+}
+
+interface Notificable {
+    + notificar(mensaje: String)
+    + obtenerContacto() : String
+    + aceptaNotificaciones() : Boolean
+}
+
+' =========================
+' CLASES ABSTRACTAS
+' =========================
+
+abstract class Persona {
+    - id: String 
+    - nombre: String 
+    - apellido: String 
+    -fechaNacimiento: LocalDate
+    - email: String
+    + calcularEdad() : int
+    + obtenerTipo() : String
+    + obtenerDocumentoIdentidad() : String
+    + getNombreCompleto() : String
+}
+
+abstract class Empleado {
+    - legajo : String
+    - fechaContratacion : LocalDate
+    - salarioBase : double
+    + calcularSalario() : double
+    + calcularBono() : double
+    + calcularAntiguedad() : int
+}
+
+abstract class Cuenta {
+    - numeroCuenta: String 
+    - saldo: double
+    - bloqueada: boolean
+    - fechaCreacion: LocalDateTime
+    - ultimaModificacion: LocalDateTime
+    - usuarioModficacion: String
+    - historial: Transaccion[]
+    + calcularInteres() : double
+    + getLimiteRetiro() : double
+    + getTipoCuenta() : String 
+    + verificarBloqueada() 
+    + agregarAlHistorial(t: Transaccion) 
+    + getHistorial() : Transaccion[]
+}
