@@ -1,98 +1,81 @@
-@startuml
-
+@startuml diagrama-clases
 skinparam classAttributeIconSize 0
+skinparam packageStyle rectangle
 
-' =========================
-' ENUMS
-' =========================
+packge "modelo.interfaces" {
+    interface Consultable {
+        + obtenerResumen() : String
+        + estadoActivo() : boolean
+        + obtenerTipo() : String
+    }
 
-enum EstadoTransaccion {
-    PENDIENTE
-    PROCESANDO
-    COMPLETADA
-    RECHAZADA
-    REVERTIDA
+    interface Transaccionable {
+        + depositar(monto: double) : void
+        + retirar(monto: double) : void
+        + calcularComision(monto: double) : double
+        + consultarSaldo() : double
+    }
+
+    interface Auditable {
+        + obtenerFechaCreacion(): LocalDateTime
+        + obtenerUltimaModificacion(): LocalDateTime
+        + obtenerUsuarioModificacion(): String
+        + registrarModificacion(usuario: String): void
+    }
+
+    interface Notificable {
+        + notificar(mensaje: String): void
+        + obtenerContacto(): String
+        + aceptoNotificaciones(): boolean
+    }
 }
 
-enum TipoCuenta {
-    AHORROS
-    CORRIENTE
-    CREDITO
+packge "modelo.enums" {
+    enum EstadoTransaccion {
+        PENDIENTE
+        PROCESANDO
+        COMPLETADA
+        RECHAZADA
+        REVERTIDA
+    }
+
+    enum TipoCuenta {
+        CORRIENTE
+        AHORRO
+        CREDITO
+    }
+
+    enum Turno {
+        MAÑANA
+        TARDE
+        NOCHE
+    }
+
+    enum TipoDocumento {
+        CELUDA
+        PASAPORTE
+        NIT
+        CELUDA_EXTRANJERIA
+    }
 }
 
-enum Turno {
-    MAÑANA
-    TARDE
-    NOCHE
-}
+package "modelo.excepciones" {
+    class Excepcion <<checked>>
+    class RuntimeExcepcion <<unchecked>>
 
-enum TipoDocumento {
-    CELUDA
-    PASAPORTE
-    NIT
-    CELUDA_EXTRANJERIA
-}
+    class SistemaBancarioException {
+        - codigoError: String
+        - timestamp: LocalDateTime
+        + toString(): String
+    }
 
-' =========================
-' INTERFACES
-' =========================
+    class BancoRuntimeException {
+        + toString(): String
+    }
 
-interface Consultable {
-    + obtenerResumen(): String
-    + estadoActivo(): Boolean
-    + obtenerTipo(): String
-}
-
-interface Transaccionable {
-    + depositar(monto: double)
-    + retirar(monto: double)
-    + calcularComision(monto: double) : double
-    + consultarSaldo() : double
-}
-
-interface Notificable {
-    + notificar(mensaje: String)
-    + obtenerContacto() : String
-    + aceptaNotificaciones() : Boolean
-}
-
-' =========================
-' CLASES ABSTRACTAS
-' =========================
-
-abstract class Persona {
-    - id: String 
-    - nombre: String 
-    - apellido: String 
-    -fechaNacimiento: LocalDate
-    - email: String
-    + calcularEdad() : int
-    + obtenerTipo() : String
-    + obtenerDocumentoIdentidad() : String
-    + getNombreCompleto() : String
-}
-
-abstract class Empleado {
-    - legajo : String
-    - fechaContratacion : LocalDate
-    - salarioBase : double
-    + calcularSalario() : double
-    + calcularBono() : double
-    + calcularAntiguedad() : int
-}
-
-abstract class Cuenta {
-    - numeroCuenta: String 
-    - saldo: double
-    - bloqueada: boolean
-    - fechaCreacion: LocalDateTime
-    - ultimaModificacion: LocalDateTime
-    - usuarioModficacion: String
-    - historial: Transaccion[]
-    + calcularInteres() : double
-    + getLimiteRetiro() : double
-    + getTipoCuenta() : String 
-    + verificarBloqueada() 
-    + agregarAlHistorial(t: Transaccion) 
-    + getHistorial() : Transaccion[]
+    Excepction <|-- SistemaBancarioException
+    SistemaBancarioException <|-- SaldoInsuficienteException
+    SitemaBancarioException <|-- CuentaBloqueadaException
+    SistemaBancarioException <|-- ClienteNoEncontradoException
+    SistemaBancarioException <|-- CapacidadExcedidaException
 }
