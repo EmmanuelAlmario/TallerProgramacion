@@ -181,3 +181,98 @@ package "modelo.empleados" {
     Empleado <|-- AsesorFinanciero
     Empleado <|-- GerenteSucursal
 }
+ 
+package "modelo.cuentas" {
+    class CuentaCorriente {
+        - montoSobregiro: double
+        - comisionMantenimiento: double
+    }
+    class CuentaAhorros {
+        - tasaInteres: double
+        - retirosMesActual: int
+        - maxRetirosMes: int
+    }
+    class CuentaCredito {
+        - limiteCredito: double
+        - tasaInteres: double
+        - deudaActual: double
+    }
+
+    Cuenta <|-- CuentaCorriente
+    Cuenta <|-- CuentaAhorros
+    Cuenta <|-- CuentaCredito
+}
+
+package "modelo.banco" {
+    class Banco {
+        - nombre: String
+        - empleados: Empleado[50]
+        - clientes: Persona[200]
+        - cuentas: Cuenta[500]
+        + registrarCliente(c: Persona): void
+        + registrarEmpleado(e: Empleado): void
+        + abrirCuenta(idCliente: String, c: Cuenta): void
+        + buscarCliente(id: String): Persona
+        + calcularNominaTotal(): double
+        + calcularInteresesMensuales(): void
+    }
+
+    class Transaccion {
+        - id: String
+        - monto: double
+        - estado: EstadoTransaccion
+        - fecha: LocalDateTime
+        - descripcion: String
+        + cambiarEstado(nuevo: EstadoTransaccion): void
+        + generarComprobante(): String
+    }
+}
+
+' Relaciones de Realización (Interfaces)
+ClienteNatural ..|> Consultable
+ClienteNatural ..|> Notificable
+ClienteNatural ..|> Auditable
+
+ClienteEmpresarial ..|> Consultable
+ClienteEmpresarial ..|> Notificable
+ClienteEmpresarial ..|> Auditable
+
+AsesorFinanciero ..|> Consultable
+AsesorFinanciero ..|> Auditable
+
+GerenteSucursal ..|> Consultable
+GerenteSucursal ..|> Auditable
+
+CuentaCorriente ..|> Consultable
+CuentaCorriente ..|> Transaccionable
+CuentaCorriente ..|> Auditable
+
+CuentaAhorros ..|> Consultable
+CuentaAhorros ..|> Transaccionable
+CuentaAhorros ..|> Auditable
+
+CuentaCredito ..|> Consultable
+CuentaCredito ..|> Transaccionable
+CuentaCredito ..|> Auditable
+
+Banco ..|> Auditable
+
+' Relaciones de Asociación y Composición
+Banco "1" *-- "0..50" Empleado : posee >
+Banco "1" *-- "0..200" Persona : gestiona >
+Banco "1" *-- "0..500" Cuenta : administra >
+
+Persona "1" o-- "0..5" Cuenta : tiene >
+Cuenta "1" o-- "0..20" Transaccion : registra >
+
+Transaccion --> "1" Cuenta : origen
+Transaccion --> "0..1" Cuenta : destino
+
+' Dependencias de Excepciones (Ejemplos clave)
+Banco ..> CapacidadExcedidaException : <<throws>>
+Banco ..> ClienteNoEncontradoException : <<throws>>
+Transaccionable ..> SaldoInsuficienteException : <<throws>>
+Transaccionable ..> CuentaBloqueadaException : <<throws>>
+GerenteSucursal ..> PermisoInsuficienteException : <<throws>>
+
+@enduml
