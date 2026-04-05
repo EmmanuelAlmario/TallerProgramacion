@@ -52,10 +52,10 @@ package "modelo.enums" {
     }
 
     enum TipoDocumento {
-        CELUDA
+        CEDULA
         PASAPORTE
         NIT
-        CELUDA_EXTRANJERIA
+        CEDULA_EXTRANJERIA
     }
 }
 
@@ -73,9 +73,9 @@ package "modelo.excepciones" {
         + toString(): String
     }
 
-    Excepction <|-- SistemaBancarioException
+    Excepcion <|-- SistemaBancarioException
     SistemaBancarioException <|-- SaldoInsuficienteException
-    SitemaBancarioException <|-- CuentaBloqueadaException
+    SistemaBancarioException <|-- CuentaBloqueadaException
     SistemaBancarioException <|-- ClienteNoEncontradoException
     SistemaBancarioException <|-- CapacidadExcedidaException
 
@@ -84,11 +84,19 @@ package "modelo.excepciones" {
     BancoRuntimeException <|-- EstadoTransaccionInvalidaException
     BancoRuntimeException <|-- PermisoInsuficienteException
 
-    SaldoInsuficienteException: - saldoActual: double
-    SaldoInsuficienteException: - montoSolicitado: double
-    ClienteNoEncontradoException: - idCliente: String 
-    CapacidadExcedidaException: - campo: String 
-    DatoInvalidoException: - valorRecibido: String
+    class SaldoInsuficienteException {
+        - saldoActual: double
+        - montoSolicitado: double
+    }
+    class ClienteNoEncontradoException {
+        - idCliente: String 
+    }
+    class CapacidadExcedidaException {
+        - campo: String 
+    }
+    class DatoInvalidoException {
+        - valorRecibido: String
+    }
 }
 
 package "modelo.abstractas" {
@@ -128,20 +136,20 @@ package "modelo.abstractas" {
         + getHistorial(): Transaccion[]
     }
 
-    Persoan <|-- Empleado
+    Persona <|-- Empleado
 }
 
 package "modelo.personas" {
     class ClienteNatural {
         - tipoDocumento: TipoDocumento
         - numeroDocumento: String
-        - cuentas: cuenta[5]
+        - cuentas: Cuenta[5]
     }
 
     class ClienteEmpresarial {
         - nit: String
         - razonSocial: String
-        -representacionLegal: String
+        - representacionLegal: String
         - cuentas: Cuenta[5]
     }
 
@@ -153,7 +161,7 @@ package "modelo.empleados" {
     class Cajero {
         - turno: Turno
         - sucursalAsignada: String
-        - transaccionnesDia: int
+        - transaccionesDia: int
     }
 
     class AsesorFinanciero {
@@ -173,4 +181,3 @@ package "modelo.empleados" {
     Empleado <|-- AsesorFinanciero
     Empleado <|-- GerenteSucursal
 }
-
