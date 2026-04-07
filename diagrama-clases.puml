@@ -1,11 +1,10 @@
 @startuml diagrama-clases
-skinparam classAttributeIconSize 0
 skinparam packageStyle rectangle
 
 package "modelo.interfaces" {
     interface Consultable {
         + obtenerResumen() : String
-        + estadoActivo() : boolean
+        + estaActivo() : boolean
         + obtenerTipo() : String
     }
 
@@ -26,7 +25,7 @@ package "modelo.interfaces" {
     interface Notificable {
         + notificar(mensaje: String): void
         + obtenerContacto(): String
-        + aceptoNotificaciones(): boolean
+        + aceptaNotificaciones(): boolean
     }
 }
 
@@ -41,7 +40,7 @@ package "modelo.enums" {
 
     enum TipoCuenta {
         CORRIENTE
-        AHORRO
+        AHORROS
         CREDITO
     }
 
@@ -60,8 +59,8 @@ package "modelo.enums" {
 }
 
 package "modelo.excepciones" {
-    class Excepcion <<checked>>
-    class RuntimeExcepcion <<unchecked>>
+    class Exception <<external>>
+    class RuntimeException <<external>>
 
     class SistemaBancarioException {
         - codigoError: String
@@ -73,15 +72,15 @@ package "modelo.excepciones" {
         + toString(): String
     }
 
-    Excepcion <|-- SistemaBancarioException
+    Exception <|-- SistemaBancarioException
     SistemaBancarioException <|-- SaldoInsuficienteException
     SistemaBancarioException <|-- CuentaBloqueadaException
     SistemaBancarioException <|-- ClienteNoEncontradoException
     SistemaBancarioException <|-- CapacidadExcedidaException
 
-    RuntimeExcepcion <|-- BancoRuntimeException
+    RuntimeException <|-- BancoRuntimeException
     BancoRuntimeException <|-- DatoInvalidoException
-    BancoRuntimeException <|-- EstadoTransaccionInvalidaException
+    BancoRuntimeException <|-- EstadoTransaccionInvalidoException
     BancoRuntimeException <|-- PermisoInsuficienteException
 
     class SaldoInsuficienteException {
@@ -89,13 +88,14 @@ package "modelo.excepciones" {
         - montoSolicitado: double
     }
     class ClienteNoEncontradoException {
-        - idCliente: String 
+        - idCliente: String
     }
     class CapacidadExcedidaException {
-        - campo: String 
+        - capacidadMaxima: int
     }
     class DatoInvalidoException {
-        - valorRecibido: String
+        - campo: String
+        - valorRecibido: Object
     }
 }
 
@@ -107,14 +107,21 @@ package "modelo.abstractas" {
         - fechaNacimiento: LocalDate
         - email: String
         + {abstract} calcularEdad(): int
-        + {abstract} obtenerTipoDocumento(): String
+        + {abstract} obtenerTipo(): String
         + {abstract} obtenerDocumentoIdentidad(): String
         + getNombreCompleto(): String
+    }
+
+    abstract class Cliente {
+        + {abstract} agregarCuenta(c: Cuenta): void
+        + {abstract} getCuentas(): Cuenta[]
     }
 
     abstract class Empleado {
         - legajo: String
         - fechaContratacion: LocalDate
+        - salarioBase: double
+        - activo: boolean
         + {abstract} calcularSalario(): double
         + {abstract} calcularBono(): double
         + calcularAntiguedad(): int
@@ -127,7 +134,7 @@ package "modelo.abstractas" {
         - fechaCreacion: LocalDateTime
         - ultimaModificacion: LocalDateTime
         - usuarioModificacion: String
-        - {static} historial: Transaccion[20]
+        - historial: Transaccion[20]
         + {abstract} calcularInteres(): double
         + {abstract} getLimiteRetiro(): double
         + {abstract} getTipoCuenta(): String
@@ -136,6 +143,7 @@ package "modelo.abstractas" {
         + getHistorial(): Transaccion[]
     }
 
+    Persona <|-- Cliente
     Persona <|-- Empleado
 }
 
@@ -153,8 +161,8 @@ package "modelo.personas" {
         - cuentas: Cuenta[5]
     }
 
-    Persona <|-- ClienteNatural
-    Persona <|-- ClienteEmpresarial
+    Cliente <|-- ClienteNatural
+    Cliente <|-- ClienteEmpresarial
 }
 
 package "modelo.empleados" {
@@ -167,21 +175,21 @@ package "modelo.empleados" {
     class AsesorFinanciero {
         - comisionBase: double
         - metasMensuales: double
-        - clientesAsignados: ClienteNatural[20]
+        - clientesAsignados: Cliente[20]
     }
 
     class GerenteSucursal {
         - sucursal: String
         - presupuestoMensual: double
         - empleadosACargo: Empleado[30]
-        + aprobarCredito(): void
+        + aprobarCredito(solicitante: Empleado): void
     }
 
     Empleado <|-- Cajero
     Empleado <|-- AsesorFinanciero
     Empleado <|-- GerenteSucursal
 }
- 
+
 package "modelo.cuentas" {
     class CuentaCorriente {
         - montoSobregiro: double
@@ -207,12 +215,13 @@ package "modelo.banco" {
     class Banco {
         - nombre: String
         - empleados: Empleado[50]
-        - clientes: Persona[200]
+        - clientes: Cliente[200]
         - cuentas: Cuenta[500]
-        + registrarCliente(c: Persona): void
+        + registrarCliente(c: Cliente): void
         + registrarEmpleado(e: Empleado): void
         + abrirCuenta(idCliente: String, c: Cuenta): void
-        + buscarCliente(id: String): Persona
+        + buscarCliente(id: String): Cliente
+        + realizarTransferencia(origen: Cuenta, destino: Cuenta, monto: double): void
         + calcularNominaTotal(): double
         + calcularInteresesMensuales(): void
     }
@@ -229,13 +238,9 @@ package "modelo.banco" {
 }
 
 ' Relaciones de Realización (Interfaces)
-ClienteNatural ..|> Consultable
-ClienteNatural ..|> Notificable
-ClienteNatural ..|> Auditable
-
-ClienteEmpresarial ..|> Consultable
-ClienteEmpresarial ..|> Notificable
-ClienteEmpresarial ..|> Auditable
+Cliente ..|> Consultable
+Cliente ..|> Notificable
+Cliente ..|> Auditable
 
 AsesorFinanciero ..|> Consultable
 AsesorFinanciero ..|> Auditable
@@ -251,7 +256,7 @@ CuentaAhorros ..|> Consultable
 CuentaAhorros ..|> Transaccionable
 CuentaAhorros ..|> Auditable
 
-CuentaCredito ..|> Consultable
+CuentaCreddito ..|> Consultable
 CuentaCredito ..|> Transaccionable
 CuentaCredito ..|> Auditable
 
@@ -259,16 +264,16 @@ Banco ..|> Auditable
 
 ' Relaciones de Asociación y Composición
 Banco "1" *-- "0..50" Empleado : posee >
-Banco "1" *-- "0..200" Persona : gestiona >
+Banco "1" *-- "0..200" Cliente : gestiona >
 Banco "1" *-- "0..500" Cuenta : administra >
 
-Persona "1" o-- "0..5" Cuenta : tiene >
+Cliente "1" o-- "0..5" Cuenta : tiene >
 Cuenta "1" o-- "0..20" Transaccion : registra >
 
 Transaccion --> "1" Cuenta : origen
 Transaccion --> "0..1" Cuenta : destino
 
-' Dependencias de Excepciones (Ejemplos clave)
+' Dependencias de Excepciones
 Banco ..> CapacidadExcedidaException : <<throws>>
 Banco ..> ClienteNoEncontradoException : <<throws>>
 Transaccionable ..> SaldoInsuficienteException : <<throws>>
