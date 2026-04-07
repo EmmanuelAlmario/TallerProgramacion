@@ -1,0 +1,78 @@
+@startuml
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Cajero" as cajero
+actor "Asesor Financiero" as asesor
+actor "Gerente de Sucursal" as gerente
+actor "Cliente" as cliente
+actor "Sistema Auditor" as auditor
+
+rectangle "Sistema de Gestión Bancaria Digital" {
+
+    package "Gestión de Clientes y Cuentas" {
+        (Registrar Cliente) as UC1
+        (Registrar Cliente Natural) as UC1a
+        (Registrar Cliente Empresarial) as UC1b
+        (Abrir Cuenta) as UC2
+        (Consultar Cliente e Historial) as UC6
+        (Gestionar Bloqueos de Cuenta) as UC7
+
+        UC1a --|> UC1
+        UC1b --|> UC1
+
+        UC2 ..> (Validar Cliente Existente) : <<include>>
+        UC2 ..> (Validar Máximo 5 Cuentas) : <<include>>
+    }
+
+    package "Gestión de Transacciones" {
+        (Procesar Depósito) as UC3
+        (Procesar Retiro) as UC4
+        (Realizar Transferencia) as UC5
+        (Notificar Cliente) as UC11
+
+        (Aplicar Comisiones e Intereses) as UC_Comision
+
+        UC4 ..> UC_Comision : <<include>>
+        UC5 ..> UC_Comision : <<include>>
+
+        UC3 ..> UC11 : <<include>>
+        UC4 ..> UC11 : <<include>>
+        UC5 ..> UC11 : <<include>>
+    }
+
+    package "Gestión de Personal y Sucursal" {
+        (Registrar Empleado) as UC9
+        (Calcular Nómina) as UC10
+        (Aprobar Crédito) as UC8
+
+        (Calcular Bonificaciones y Antigüedad) as UC_Bonos
+        (Verificar Permiso de Gerente) as UC_Permiso
+
+        UC10 ..> UC_Bonos : <<include>>
+        UC8  ..> UC_Permiso : <<include>>
+    }
+
+    package "Auditoría del Sistema" {
+        (Consultar Historial de Modificaciones) as UC12
+    }
+}
+
+' Relaciones de Actores
+cajero --> UC1
+cajero --> UC2
+cajero --> UC3
+cajero --> UC4
+
+asesor --> UC5
+asesor --> UC6
+asesor --> UC7
+
+gerente --> UC8
+gerente --> UC9
+gerente --> UC10
+
+UC11 --> cliente
+auditor --> UC12
+
+@enduml
