@@ -4,10 +4,14 @@ import modelo.banco.Transaccion;
 import modelo.excepciones.CapacidadExcedidaException;
 import modelo.excepciones.CuentaBloqueadaException;
 import modelo.excepciones.DatoInvalidoException;
+import modelo.excepciones.SistemaBancarioException;
+import modelo.interfaces.Auditable;
+import modelo.interfaces.Consultable;
+import modelo.interfaces.Transaccionable;
 
 import java.time.LocalDateTime;
 
-public abstract class Cuenta {
+public abstract class Cuenta implements Consultable, Transaccionable, Auditable {
 
     private String numeroCuenta;
     private double saldo;
@@ -19,7 +23,6 @@ public abstract class Cuenta {
     private Transaccion[] historial;
     private int contadorTransacciones;
 
-    // Constructor
     public Cuenta(String numeroCuenta, double saldoInicial) {
         this.numeroCuenta = numeroCuenta;
         this.saldo = saldoInicial;
@@ -37,6 +40,20 @@ public abstract class Cuenta {
     public abstract double getLimiteRetiro();
 
     public abstract String getTipoCuenta();
+
+    @Override
+    public abstract void depositar(double monto) throws CuentaBloqueadaException;
+
+    @Override
+    public abstract void retirar(double monto) throws SistemaBancarioException;
+
+    @Override
+    public abstract double calcularComision(double monto);
+
+    @Override
+    public double consultarSaldo() {
+        return saldo;
+    }
 
     public void verificarBloqueada() throws CuentaBloqueadaException {
         if (bloqueada) {
@@ -57,9 +74,20 @@ public abstract class Cuenta {
         return copia;
     }
 
-    // =========================
-    // GETTERS Y SETTERS
-    // =========================
+    @Override
+    public String obtenerResumen() {
+        return "Cuenta " + getTipoCuenta() + " [" + numeroCuenta + "] saldo=" + saldo;
+    }
+
+    @Override
+    public boolean estaActivo() {
+        return !bloqueada;
+    }
+
+    @Override
+    public String obtenerTipo() {
+        return getTipoCuenta();
+    }
 
     public String getNumeroCuenta() {
         return numeroCuenta;
@@ -100,6 +128,22 @@ public abstract class Cuenta {
         return usuarioModificacion;
     }
 
+    @Override
+    public LocalDateTime obtenerFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    @Override
+    public LocalDateTime obtenerUltimaModificacion() {
+        return ultimaModificacion;
+    }
+
+    @Override
+    public String obtenerUsuarioModificacion() {
+        return usuarioModificacion;
+    }
+
+    @Override
     public void registrarModificacion(String usuario) {
         this.ultimaModificacion = LocalDateTime.now();
         this.usuarioModificacion = usuario;

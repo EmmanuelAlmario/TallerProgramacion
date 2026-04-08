@@ -1,9 +1,15 @@
 package modelo.banco;
 
-import modelo.abstractas.*;
-import modelo.excepciones.*;
+import modelo.abstractas.Cliente;
+import modelo.abstractas.Cuenta;
+import modelo.abstractas.Empleado;
+import modelo.excepciones.CapacidadExcedidaException;
+import modelo.excepciones.ClienteNoEncontradoException;
+import modelo.interfaces.Auditable;
 
-public class Banco {
+import java.time.LocalDateTime;
+
+public class Banco implements Auditable {
 
     private String nombre;
     private Empleado[] empleados = new Empleado[50];
@@ -12,11 +18,23 @@ public class Banco {
 
     private int contEmp, contCli, contCuentas;
 
+    private final LocalDateTime fechaCreacion;
+    private LocalDateTime ultimaModificacion;
+    private String usuarioModificacion;
+
+    public Banco(String nombre) {
+        this.nombre = nombre;
+        this.fechaCreacion = LocalDateTime.now();
+        this.ultimaModificacion = fechaCreacion;
+        this.usuarioModificacion = "sistema";
+    }
+
     public void registrarCliente(Cliente c) throws CapacidadExcedidaException {
         if (contCli >= clientes.length) {
             throw new CapacidadExcedidaException(clientes.length);
         }
         clientes[contCli++] = c;
+        registrarModificacion("registro-cliente");
     }
 
     public void registrarEmpleado(Empleado e) throws CapacidadExcedidaException {
@@ -24,6 +42,7 @@ public class Banco {
             throw new CapacidadExcedidaException(empleados.length);
         }
         empleados[contEmp++] = e;
+        registrarModificacion("registro-empleado");
     }
 
     public Cliente buscarCliente(String id) throws ClienteNoEncontradoException {
@@ -47,6 +66,7 @@ public class Banco {
         cliente.agregarCuenta(c);
 
         cuentas[contCuentas++] = c;
+        registrarModificacion("abrir-cuenta");
     }
 
     public double calcularNominaTotal() {
@@ -61,5 +81,26 @@ public class Banco {
         for (int i = 0; i < contCuentas; i++) {
             cuentas[i].calcularInteres();
         }
+    }
+
+    @Override
+    public LocalDateTime obtenerFechaCreacion() {
+        return fechaCreacion;
+    }
+
+    @Override
+    public LocalDateTime obtenerUltimaModificacion() {
+        return ultimaModificacion;
+    }
+
+    @Override
+    public String obtenerUsuarioModificacion() {
+        return usuarioModificacion;
+    }
+
+    @Override
+    public void registrarModificacion(String usuario) {
+        this.ultimaModificacion = LocalDateTime.now();
+        this.usuarioModificacion = usuario;
     }
 }

@@ -2,11 +2,12 @@ package modelo.empleados;
 
 import modelo.abstractas.Empleado;
 import modelo.excepciones.PermisoInsuficienteException;
+import modelo.interfaces.Consultable;
 
 import java.time.LocalDate;
 import java.time.Period;
 
-public class GerenteSucursal extends Empleado {
+public class GerenteSucursal extends Empleado implements Consultable {
 
     private String sucursal;
     private double presupuestoAnual;
@@ -41,15 +42,24 @@ public class GerenteSucursal extends Empleado {
 
     @Override
     public double calcularBono() {
-        return 200000; // bono fijo gerencial
+        return 200000;
     }
 
-    // 🔥 IMPORTANTE (README)
     public void aprobarCredito(Empleado solicitante) {
         if (!(solicitante instanceof GerenteSucursal)) {
             throw new PermisoInsuficienteException("Solo el gerente puede aprobar créditos");
         }
-
+        registrarModificacion(getLegajo());
         System.out.println("Crédito aprobado");
+    }
+
+    @Override
+    public String obtenerResumen() {
+        return getNombreCompleto() + " - " + sucursal + " - Empleados a cargo: " + cantidadEmpleados;
+    }
+
+    @Override
+    public boolean estaActivo() {
+        return isActivo();
     }
 }

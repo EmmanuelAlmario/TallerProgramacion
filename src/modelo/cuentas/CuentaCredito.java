@@ -1,74 +1,63 @@
 package modelo.cuentas;
 
 import modelo.abstractas.Cuenta;
-import modelo.excepciones.BancoRuntimeException;
 import modelo.excepciones.CuentaBloqueadaException;
 import modelo.excepciones.DatoInvalidoException;
-import modelo.excepciones.SaldoInsuficienteException;
 import modelo.excepciones.SistemaBancarioException;
 
-public class CuentaAhorros extends Cuenta {
-
+public class CuentaCredito extends Cuenta {
+    private double limiteCredito;
     private double tasaInteres;
-    private int retirosMesActual;
-    private int maxRetirosMes;
+    private double deudaActual;
 
-    public CuentaAhorros(String numeroCuenta, double saldo,
-                         double tasaInteres, int maxRetirosMes) {
-        super(numeroCuenta, saldo);
+    public CuentaCredito(String numeroCuenta, double deudaInicial,
+                         double limiteCredito, double tasaInteres) {
+        super(numeroCuenta, -Math.abs(deudaInicial));
+        this.deudaActual = Math.abs(deudaInicial);
+        this.limiteCredito = limiteCredito;
         this.tasaInteres = tasaInteres;
-        this.maxRetirosMes = maxRetirosMes;
-        this.retirosMesActual = 0;
     }
 
     @Override
     public double calcularInteres() {
-        return getSaldo() * tasaInteres / 12;
+        return deudaActual * tasaInteres / 12;
     }
 
     @Override
     public double getLimiteRetiro() {
-        return 1000000;
+        return Math.max(0, limiteCredito - deudaActual);
     }
 
     @Override
     public String getTipoCuenta() {
-        return "AHORROS";
+        return "CREDITO";
     }
 
     @Override
     public void depositar(double monto) throws CuentaBloqueadaException {
         verificarBloqueada();
-
         if (monto <= 0) {
             throw new DatoInvalidoException("monto", monto);
         }
-
-        setSaldo(getSaldo() + monto);
+        deudaActual = Math.max(0, deudaActual - monto);
+        setSaldo(-deudaActual);
     }
 
     @Override
     public void retirar(double monto) throws SistemaBancarioException {
         verificarBloqueada();
-
         if (monto <= 0) {
             throw new DatoInvalidoException("monto", monto);
         }
-
-        if (getSaldo() < monto) {
-            throw new SaldoInsuficienteException(getSaldo(), monto);
+        if (deudaActual + monto > limiteCredito) {
+            throw new DatoInvalidoException("monto", "Supera límite de crédito disponible");
         }
-
-        if (retirosMesActual >= maxRetirosMes) {
-            throw new BancoRuntimeException("Límite de retiros alcanzado");
-        }
-
-        setSaldo(getSaldo() - monto);
-        retirosMesActual++;
+        deudaActual += monto;
+        setSaldo(-deudaActual);
     }
 
     @Override
     public double calcularComision(double monto) {
-        return 0;
+        return monto * 0.015;
     }
 }

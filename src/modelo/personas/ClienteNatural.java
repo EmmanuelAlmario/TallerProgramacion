@@ -2,21 +2,16 @@ package modelo.personas;
 
 import modelo.abstractas.Cliente;
 import modelo.enums.TipoDocumento;
-import modelo.interfaces.*;
+import modelo.interfaces.Consultable;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.Period;
 
-public class ClienteNatural extends Cliente implements Consultable, Notificable, Auditable {
+public class ClienteNatural extends Cliente implements Consultable {
 
     private TipoDocumento tipoDocumento;
     private String numeroDocumento;
-
-    // Auditable
-    private LocalDateTime creacion;
-    private LocalDateTime modificacion;
-    private String usuario;
 
     public ClienteNatural(String id, String nombre, String apellido,
                           LocalDate fechaNacimiento, String email,
@@ -26,13 +21,8 @@ public class ClienteNatural extends Cliente implements Consultable, Notificable,
         super(id, nombre, apellido, fechaNacimiento, email);
         this.tipoDocumento = tipoDocumento;
         this.numeroDocumento = numeroDocumento;
-        this.creacion = creacion;
-        this.usuario = usuario;
+        registrarModificacion(usuario);
     }
-
-    // =========================
-    // MÉTODOS ABSTRACTOS (Persona)
-    // =========================
 
     @Override
     public String obtenerTipo() {
@@ -49,10 +39,6 @@ public class ClienteNatural extends Cliente implements Consultable, Notificable,
         return Period.between(getFechaNacimiento(), LocalDate.now()).getYears();
     }
 
-    // =========================
-    // INTERFAZ Consultable
-    // =========================
-
     @Override
     public String obtenerResumen() {
         return getNombreCompleto() + " - " + numeroDocumento;
@@ -61,52 +47,5 @@ public class ClienteNatural extends Cliente implements Consultable, Notificable,
     @Override
     public boolean estaActivo() {
         return true;
-    }
-
-    // =========================
-    // INTERFAZ Notificable
-    // =========================
-
-    @Override
-    public void notificar(String mensaje) {
-        if (aceptaNotificaciones()) {
-            System.out.println("Notificación: " + mensaje);
-        }
-    }
-
-    @Override
-    public String obtenerContacto() {
-        return getEmail();
-    }
-
-    @Override
-    public boolean aceptaNotificaciones() {
-        return true;
-    }
-
-    // =========================
-    // INTERFAZ Auditable
-    // =========================
-
-
-    @Override
-    public LocalDateTime obtenerFechaCreacion() {
-        return creacion;
-    }
-
-    @Override
-    public LocalDateTime obtenerUltimaModificacion() {
-        return modificacion;
-    }
-
-    @Override
-    public String obtenerUsuarioModificacion() {
-        return usuario;
-    }
-
-    @Override
-    public void registrarModificacion(String usuario) {
-        this.usuario = usuario;
-        this.modificacion = LocalDateTime.now();
     }
 }

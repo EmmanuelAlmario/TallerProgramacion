@@ -1,12 +1,13 @@
 package modelo.empleados;
 
-import modelo.abstractas.Empleado;
 import modelo.abstractas.Cliente;
+import modelo.abstractas.Empleado;
+import modelo.interfaces.Consultable;
 
 import java.time.LocalDate;
 import java.time.Period;
 
-public class AsesorFinanciero extends Empleado {
+public class AsesorFinanciero extends Empleado implements Consultable {
 
     private double comisionBase;
     private double metasMensuales;
@@ -35,6 +36,7 @@ public class AsesorFinanciero extends Empleado {
     public void agregarCliente(Cliente c) {
         if (cantidadClientes < clientesAsignados.length) {
             clientesAsignados[cantidadClientes++] = c;
+            registrarModificacion(getLegajo());
         }
     }
 
@@ -51,5 +53,15 @@ public class AsesorFinanciero extends Empleado {
     @Override
     public String obtenerDocumentoIdentidad() {
         return "Legajo: " + getLegajo();
+    }
+
+    @Override
+    public String obtenerResumen() {
+        return getNombreCompleto() + " - " + obtenerDocumentoIdentidad() + " - Clientes: " + cantidadClientes;
+    }
+
+    @Override
+    public boolean estaActivo() {
+        return isActivo();
     }
 }

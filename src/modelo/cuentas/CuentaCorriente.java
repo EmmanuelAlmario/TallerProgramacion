@@ -1,9 +1,12 @@
 package modelo.cuentas;
 
 import modelo.abstractas.Cuenta;
-import modelo.excepciones.*;
-import modelo.interfaces.*;
-public class CuentaCorriente extends Cuenta implements Consultable, Transaccionable, Auditable {
+import modelo.excepciones.CuentaBloqueadaException;
+import modelo.excepciones.DatoInvalidoException;
+import modelo.excepciones.SaldoInsuficienteException;
+import modelo.excepciones.SistemaBancarioException;
+
+public class CuentaCorriente extends Cuenta {
 
     private double montoSobregiro;
     private double comisionMantenimiento;
@@ -58,11 +61,6 @@ public class CuentaCorriente extends Cuenta implements Consultable, Transacciona
 
     @Override
     public double calcularComision(double monto) {
-        return monto * 0.01; // 1% ejemplo
-    }
-
-    @Override
-    public double consultarSaldo() {
-        return getSaldo();
+        return Math.max(comisionMantenimiento, monto * 0.01);
     }
 }

@@ -1,15 +1,21 @@
 package modelo.abstractas;
 
 import modelo.excepciones.DatoInvalidoException;
+import modelo.interfaces.Auditable;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.Period;
 
-public abstract class Empleado extends Persona {
+public abstract class Empleado extends Persona implements Auditable {
     private String legajo;
     private LocalDate fechaContratacion;
     private double salarioBase;
     private boolean activo;
+
+    private final LocalDateTime creacion;
+    private LocalDateTime modificacion;
+    private String usuario;
 
     public Empleado(String id, String nombre, String apellido, LocalDate fechaNacimiento,
                     String email, String legajo, LocalDate fechaContratacion,
@@ -21,12 +27,11 @@ public abstract class Empleado extends Persona {
         } else {
             this.fechaContratacion = fechaContratacion;
         }
-        if (salarioBase <= 0) {
-            throw new DatoInvalidoException("salarioBase", salarioBase);
-        } else {
-            this.salarioBase = salarioBase;
-        }
+        validarSalarioBase(salarioBase);
         this.activo = activo;
+        this.creacion = LocalDateTime.now();
+        this.modificacion = this.creacion;
+        this.usuario = "sistema";
     }
 
     public abstract double calcularSalario();
@@ -59,14 +64,38 @@ public abstract class Empleado extends Persona {
     }
 
     public void setSalarioBase(double salarioBase) {
-        if (salarioBase <= 0) {
-            throw new DatoInvalidoException("salarioBase", salarioBase);
-        } else {
-            this.salarioBase = salarioBase;
-        }
+        validarSalarioBase(salarioBase);
     }
 
     public void setActivo(boolean activo) {
         this.activo = activo;
+    }
+
+    private void validarSalarioBase(double salarioBase) {
+        if (salarioBase <= 0) {
+            throw new DatoInvalidoException("salarioBase", salarioBase);
+        }
+        this.salarioBase = salarioBase;
+    }
+
+    @Override
+    public LocalDateTime obtenerFechaCreacion() {
+        return creacion;
+    }
+
+    @Override
+    public LocalDateTime obtenerUltimaModificacion() {
+        return modificacion;
+    }
+
+    @Override
+    public String obtenerUsuarioModificacion() {
+        return usuario;
+    }
+
+    @Override
+    public void registrarModificacion(String usuario) {
+        this.usuario = usuario;
+        this.modificacion = LocalDateTime.now();
     }
 }
