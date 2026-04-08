@@ -1,6 +1,9 @@
 @startuml diagrama-clases
 skinparam packageStyle rectangle
 
+' =========================
+' INTERFACES
+' =========================
 package "modelo.interfaces" {
     interface Consultable {
         + obtenerResumen() : String
@@ -29,6 +32,9 @@ package "modelo.interfaces" {
     }
 }
 
+' =========================
+' ENUMS
+' =========================
 package "modelo.enums" {
     enum EstadoTransaccion {
         PENDIENTE
@@ -58,6 +64,9 @@ package "modelo.enums" {
     }
 }
 
+' =========================
+' EXCEPCIONES
+' =========================
 package "modelo.excepciones" {
     class Exception <<external>>
     class RuntimeException <<external>>
@@ -87,19 +96,32 @@ package "modelo.excepciones" {
         - saldoActual: double
         - montoSolicitado: double
     }
+
+    class CuentaBloqueadaException
+
     class ClienteNoEncontradoException {
         - idCliente: String
     }
+
     class CapacidadExcedidaException {
         - capacidadMaxima: int
     }
+
     class DatoInvalidoException {
         - campo: String
         - valorRecibido: Object
     }
+
+    class EstadoTransaccionInvalidoException
+
+    class PermisoInsuficienteException
 }
 
+' =========================
+' ABSTRACTAS
+' =========================
 package "modelo.abstractas" {
+
     abstract class Persona {
         - id: String
         - nombre: String
@@ -113,8 +135,9 @@ package "modelo.abstractas" {
     }
 
     abstract class Cliente {
+        - cuentas: Cuenta[5]
         + {abstract} agregarCuenta(c: Cuenta): void
-        + {abstract} getCuentas(): Cuenta[]
+        + getCuentas(): Cuenta[]
     }
 
     abstract class Empleado {
@@ -147,25 +170,31 @@ package "modelo.abstractas" {
     Persona <|-- Empleado
 }
 
+' =========================
+' PERSONAS
+' =========================
 package "modelo.personas" {
+
     class ClienteNatural {
         - tipoDocumento: TipoDocumento
         - numeroDocumento: String
-        - cuentas: Cuenta[5]
     }
 
     class ClienteEmpresarial {
         - nit: String
         - razonSocial: String
-        - representacionLegal: String
-        - cuentas: Cuenta[5]
+        - representanteLegal: String
     }
 
     Cliente <|-- ClienteNatural
     Cliente <|-- ClienteEmpresarial
 }
 
+' =========================
+' EMPLEADOS
+' =========================
 package "modelo.empleados" {
+
     class Cajero {
         - turno: Turno
         - sucursalAsignada: String
@@ -180,7 +209,7 @@ package "modelo.empleados" {
 
     class GerenteSucursal {
         - sucursal: String
-        - presupuestoMensual: double
+        - presupuestoAnual: double
         - empleadosACargo: Empleado[30]
         + aprobarCredito(solicitante: Empleado): void
     }
@@ -190,16 +219,22 @@ package "modelo.empleados" {
     Empleado <|-- GerenteSucursal
 }
 
+' =========================
+' CUENTAS
+' =========================
 package "modelo.cuentas" {
+
     class CuentaCorriente {
         - montoSobregiro: double
         - comisionMantenimiento: double
     }
+
     class CuentaAhorros {
         - tasaInteres: double
         - retirosMesActual: int
         - maxRetirosMes: int
     }
+
     class CuentaCredito {
         - limiteCredito: double
         - tasaInteres: double
@@ -211,7 +246,11 @@ package "modelo.cuentas" {
     Cuenta <|-- CuentaCredito
 }
 
+' =========================
+' BANCO
+' =========================
 package "modelo.banco" {
+
     class Banco {
         - nombre: String
         - empleados: Empleado[50]
@@ -221,13 +260,14 @@ package "modelo.banco" {
         + registrarEmpleado(e: Empleado): void
         + abrirCuenta(idCliente: String, c: Cuenta): void
         + buscarCliente(id: String): Cliente
-        + realizarTransferencia(origen: Cuenta, destino: Cuenta, monto: double): void
         + calcularNominaTotal(): double
         + calcularInteresesMensuales(): void
     }
 
     class Transaccion {
         - id: String
+        - cuentaOrigen: Cuenta
+        - cuentaDestino: Cuenta
         - monto: double
         - estado: EstadoTransaccion
         - fecha: LocalDateTime
@@ -237,10 +277,17 @@ package "modelo.banco" {
     }
 }
 
-' Relaciones de Realización (Interfaces)
-Cliente ..|> Consultable
-Cliente ..|> Notificable
-Cliente ..|> Auditable
+' =========================
+' IMPLEMENTACIONES DE INTERFACES
+' =========================
+
+ClienteNatural ..|> Consultable
+ClienteNatural ..|> Notificable
+ClienteNatural ..|> Auditable
+
+ClienteEmpresarial ..|> Consultable
+ClienteEmpresarial ..|> Notificable
+ClienteEmpresarial ..|> Auditable
 
 AsesorFinanciero ..|> Consultable
 AsesorFinanciero ..|> Auditable
@@ -256,28 +303,24 @@ CuentaAhorros ..|> Consultable
 CuentaAhorros ..|> Transaccionable
 CuentaAhorros ..|> Auditable
 
-CuentaCreddito ..|> Consultable
+CuentaCredito ..|> Consultable
 CuentaCredito ..|> Transaccionable
 CuentaCredito ..|> Auditable
 
 Banco ..|> Auditable
 
-' Relaciones de Asociación y Composición
-Banco "1" *-- "0..50" Empleado : posee >
-Banco "1" *-- "0..200" Cliente : gestiona >
-Banco "1" *-- "0..500" Cuenta : administra >
+' =========================
+' RELACIONES
+' =========================
 
-Cliente "1" o-- "0..5" Cuenta : tiene >
-Cuenta "1" o-- "0..20" Transaccion : registra >
+Banco "1" *-- "0..50" Empleado
+Banco "1" *-- "0..200" Cliente
+Banco "1" *-- "0..500" Cuenta
+
+Cliente "1" o-- "0..5" Cuenta
+Cuenta "1" o-- "0..20" Transaccion
 
 Transaccion --> "1" Cuenta : origen
 Transaccion --> "0..1" Cuenta : destino
-
-' Dependencias de Excepciones
-Banco ..> CapacidadExcedidaException : <<throws>>
-Banco ..> ClienteNoEncontradoException : <<throws>>
-Transaccionable ..> SaldoInsuficienteException : <<throws>>
-Transaccionable ..> CuentaBloqueadaException : <<throws>>
-GerenteSucursal ..> PermisoInsuficienteException : <<throws>>
 
 @enduml

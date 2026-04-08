@@ -15,30 +15,42 @@ rectangle "Sistema de Gestión Bancaria Digital" {
         (Registrar Cliente Natural) as UC1a
         (Registrar Cliente Empresarial) as UC1b
         (Abrir Cuenta) as UC2
-        (Consultar Cliente e Historial) as UC6
-        (Gestionar Bloqueos de Cuenta) as UC7
+        (Consultar Cliente) as UC6
+        (Consultar Historial de Transacciones) as UC6b
+        (Bloquear Cuenta) as UC7a
+        (Desbloquear Cuenta) as UC7b
+
+        (Validar Cliente Existente) as UC_VC
+        (Validar Máximo 5 Cuentas) as UC_V5
 
         UC1a --|> UC1
         UC1b --|> UC1
 
-        UC2 ..> (Validar Cliente Existente) : <<include>>
-        UC2 ..> (Validar Máximo 5 Cuentas) : <<include>>
+        UC2 ..> UC_VC : <<include>>
+        UC2 ..> UC_V5 : <<include>>
     }
 
     package "Gestión de Transacciones" {
-        (Procesar Depósito) as UC3
-        (Procesar Retiro) as UC4
+        (Realizar Depósito) as UC3
+        (Realizar Retiro) as UC4
         (Realizar Transferencia) as UC5
+
+        (Validar Cuenta Activa) as UC_VA
+        (Validar Saldo Suficiente) as UC_VS
+        (Aplicar Comisión) as UC_Comision
         (Notificar Cliente) as UC11
 
-        (Aplicar Comisiones e Intereses) as UC_Comision
+        UC3 ..> UC_VA : <<include>>
+        UC4 ..> UC_VA : <<include>>
+        UC4 ..> UC_VS : <<include>>
+        UC5 ..> UC_VS : <<include__
 
         UC4 ..> UC_Comision : <<include>>
         UC5 ..> UC_Comision : <<include>>
 
-        UC3 ..> UC11 : <<include>>
-        UC4 ..> UC11 : <<include>>
-        UC5 ..> UC11 : <<include>>
+        UC3 ..> UC11 : <<extend>>
+        UC4 ..> UC11 : <<extend>>
+        UC5 ..> UC11 : <<extend>>
     }
 
     package "Gestión de Personal y Sucursal" {
@@ -58,7 +70,6 @@ rectangle "Sistema de Gestión Bancaria Digital" {
     }
 }
 
-' Relaciones de Actores
 cajero --> UC1
 cajero --> UC2
 cajero --> UC3
@@ -66,13 +77,15 @@ cajero --> UC4
 
 asesor --> UC5
 asesor --> UC6
-asesor --> UC7
+asesor --> UC6b
+asesor --> UC7a
+asesor --> UC7b
 
 gerente --> UC8
 gerente --> UC9
 gerente --> UC10
 
-UC11 --> cliente
+cliente --> UC11
 auditor --> UC12
 
 @enduml
