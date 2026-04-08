@@ -36,5 +36,37 @@ public abstract class Empleado extends Persona {
         return Period.between(fechaContratacion, LocalDate.now()).getYears();
     }
 
+    public String getLegajo() {
+        return legajo;
+    }
 
+    public LocalDate getFechaContratacion() {
+        return fechaContratacion;
+    }
+
+    public double getSalarioBase() {
+        return salarioBase;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setFechaContratacion(LocalDate fechaContratacion) {
+        if (fechaContratacion.isAfter(LocalDate.now())) {
+            throw new DatoInvalidoException("fechaContratacion", fechaContratacion);
+        }
+    }
+
+    public void setSalarioBase(double salarioBase) {
+        if (salarioBase <= 0) {
+            throw new DatoInvalidoException("salarioBase", salarioBase);
+        } else {
+            this.salarioBase = salarioBase;
+        }
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
 }

@@ -1,5 +1,10 @@
 package modelo.abstractas;
 
+import modelo.banco.Transaccion;
+import modelo.excepciones.CapacidadExcedidaException;
+import modelo.excepciones.CuentaBloqueadaException;
+import modelo.excepciones.DatoInvalidoException;
+
 import java.time.LocalDateTime;
 
 public abstract class Cuenta {
